@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+</head>
+<body>
+<script src="{clientHost}/local/coreid.js"></script>
+<script>
+    $(document).ready(function() {
+        coreid_client.init({
+            config: {
+                location: 'se',
+                allowedEids: ['se-bankid'],
+                provider: 'se-bankid',
+                providerSettings: {
+                    'se-bankid': {
+                        autoStart: false,
+                        useSameDevice: {isSwedishMobiltBankIdInstalled}
+                    }
+                }
+            },
+            token: '{accessToken}',
+            callback: function (data) {
+                console.log("Core ID Callback", data);
+
+                if (data.success && data.token) {
+                    $.post("validate", data, function (result) {
+                        coreid_client.close();
+
+                        if (result.success) {
+                            $("#resultMessage").text("NationalId " + result.nationalId + ". Subject:" + result.subject + ". Family Name:" + result.familyName + ". Given Name:" + result.givenName + ". Full Name:" + result.fullName + ". Ticket:" + result.originalTicket);
+                        } else {
+                            $("#resultMessage").text(result.errorMessage);
+                        }
+                    });
+                }
+            }
+        });
+
+        coreid_client.start();
+    });
+
+</script>
+<div id="resultMessage">No input</div>
+</body>
+</html>
